@@ -26,18 +26,27 @@ void loop() {
 }
 */
 
+#include <Servo.h>
+
+Servo myservo;  // create servo object to control a servo
+// twelve servo objects can be created on most boards
+
 // constants won't change. They're used here to set pin numbers:
 const int buttonPin = 2;     // the number of the pushbutton pin
 const int ledPin =  13;      // the number of the LED pin
+const int positionClose = 0;   
+const int positionOpen = 90;  
 
 // variables will change:
 int buttonState = 0;         // variable for reading the pushbutton status
+int servoPosition = 0;                 // variable to store the servo position
 
 void setup() {
   // initialize the LED pin as an output:
   pinMode(ledPin, OUTPUT);
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
+  myservo.attach(9);  // attaches the servo on pin 9 to the servo object
 }
 
 void loop() {
@@ -48,8 +57,10 @@ void loop() {
   if (buttonState == HIGH) {
     // turn LED on:
     digitalWrite(ledPin, HIGH);
+    myservo.write(positionOpen);
   } else {
     // turn LED off:
     digitalWrite(ledPin, LOW);
+    myservo.write(positionClose); 
   }
 }
