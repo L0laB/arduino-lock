@@ -38,20 +38,24 @@ const int ledPin =  13;      // the number of the LED pin
 const int positionClose = 0;
 const int positionOpen = 90;
 
+const byte numRows= 4;          //number of rows on the keypad
+const byte numCols= 4;          //number of columns on the keypad
 
-char* password = "427";  // change the password here, just pick any 3 numbers
-const byte ROWS = 4;
-const byte COLS = 4;
-char keys[ROWS][COLS] = {
+char keymap[numRows][numCols]= {
   {'1', '2', '3', 'A'},
   {'4', '5', '6', 'B'},
   {'7', '8', '9', 'C'},
   {'*', '0', '#', 'D'}
 };
 
-byte rowPins[ROWS] = { 9, 8, 7, 6 };
-byte colPins[COLS] = { 5, 4, 3, 2 };
-Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
+byte rowPins[numRows] = {9,8,7,6}; //Rows 0 to 3 //if you modify your pins you should modify this too
+byte colPins[numCols]= {5,4,3,2}; //Columns 0 to 3
+
+Keypad myKeypad= Keypad(makeKeymap(keymap), rowPins, colPins, numRows, numCols);
+
+
+char keypressed;                 //Where the keys are stored it changes very often
+char code[]= {'6','6','0','1'};  //The default code, you can change it or make it a 'n' digits one
 
 
 
@@ -66,21 +70,34 @@ void setup() {
   pinMode(ledPin, OUTPUT);
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
-  myservo.attach(10);  // attaches the servo on pin 9 to the servo object
+  myservo.attach(10);  // attaches the servo on pin 10 to the servo object
+  closeLock();
 }
 
 void loop() {
+  keypressed = myKeypad.getKey();               //Constantly waiting for a key to be pressed
+  
   // shows pressed keys to debug
-  char keypressed = keypad.getKey();
   if (keypressed != NO_KEY) {
     Serial.println(keypressed);
   }
 
 
-  char key = keypad.getKey();
-  // read the state of the pushbutton value:
-  buttonState = digitalRead(buttonPin);
+  // check on keys to open/close lock
+  if(keypressed == '*'){                      // * to open the lock
+    //GetCode();                          //Getting code function
+    //if(a==sizeof(code))           //The GetCode function assign a value to a (it's correct when it has the size of the code array)
+      openLock();                   //Open lock function if code is correct
+    //else{
+    //}
+  }
 
+  if(keypressed == '#'){                  // # to close the lock
+    closeLock();
+  }
+
+/*  // read the state of the pushbutton value:
+  buttonState = digitalRead(buttonPin);
   // check if the pushbutton is pressed: If it is pressed, the buttonState is HIGH
   if (buttonState == HIGH) {
     // turn LED on:
@@ -91,5 +108,17 @@ void loop() {
     // turn LED off:
     digitalWrite(ledPin, LOW);
     myservo.write(positionClose);
-  }
+  }*/
+}
+
+void openLock(){             // Lock opening function
+  digitalWrite(ledPin, LOW);
+  myservo.write(90);
+  Serial.println("opening the lock");
+}
+
+void closeLock(){             // Lock closing function
+  digitalWrite(ledPin, HIGH);
+  myservo.write(0);
+  Serial.println("closing the lock");
 }
