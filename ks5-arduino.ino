@@ -58,6 +58,7 @@ void loop() {
     // turn LED on:
     digitalWrite(ledPin, HIGH);
     myservo.write(positionOpen);
+    delay(1500);
   } else {
     // turn LED off:
     digitalWrite(ledPin, LOW);
