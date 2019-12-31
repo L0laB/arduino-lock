@@ -39,7 +39,6 @@ const int positionOpen = 90;
 
 // variables will change:
 int buttonState = 0;         // variable for reading the pushbutton status
-int servoPosition = 0;                 // variable to store the servo position
 
 void setup() {
   // initialize the LED pin as an output:
@@ -53,7 +52,7 @@ void loop() {
   // read the state of the pushbutton value:
   buttonState = digitalRead(buttonPin);
 
-  // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
+  // check if the pushbutton is pressed: If it is pressed, the buttonState is HIGH
   if (buttonState == HIGH) {
     // turn LED on:
     digitalWrite(ledPin, HIGH);
