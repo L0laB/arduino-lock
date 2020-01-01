@@ -32,12 +32,15 @@ Keypad myKeypad = Keypad(makeKeymap(keymap), rowPins, colPins, numRows, numCols)
 char keypressed;                    //Where the keys are stored it changes very often
 char code[] = {'5', '8', '1', '2'}; //The default code, you can change it or make it a 'n' digits one
 short a = 0, i = 0, j = 0;          //variables used later for iterating through password input sequence
-
+const int ledRed =  12;      // the number of the LED pin
+const int ledGreen =  13;      // the number of the LED pin
 
 void setup() {
   Serial.begin(9600);               //open connection to serial monitor
 
   pinMode(LED_BUILTIN, OUTPUT);          //initialize the LED pin as an output
+  digitalWrite(ledGreen, LOW);
+  digitalWrite(ledRed, HIGH);
 
   myservo.attach(10);               //attaches the servo on pin 10 to the servo object
   closeLock();
@@ -91,10 +94,14 @@ void closeLock() {
   digitalWrite(LED_BUILTIN, HIGH);
   myservo.write(0);
   Serial.println("closing the lock");
+  digitalWrite(ledRed, HIGH);
+  digitalWrite(ledGreen, LOW);
 }
 
 void openLock() {
   digitalWrite(LED_BUILTIN, LOW);
   myservo.write(90);
   Serial.println("opening the lock");
+  digitalWrite(ledGreen, HIGH);
+  digitalWrite(ledRed, LOW);
 }
