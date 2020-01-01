@@ -1,41 +1,17 @@
+
 /*
-  Controlling a servo position using a potentiometer (variable resistor)
-  by Michal Rinott <http://people.interaction-ivrea.it/m.rinott>
+  Controlling a lock with servo and a keypad
+  by L0laB <https://github.com/L0laB/arduino-lock>
 
-  modified on 8 Nov 2013
-  by Scott Fitzgerald
-  http://www.arduino.cc/en/Tutorial/Knob
+  modified on 1st Jan 2020
 */
 
-/*#include <Servo.h>
-
-  Servo myservo;  // create servo object to control a servo
-
-  int potpin = 0;  // analog pin used to connect the potentiometer
-  int val;    // variable to read the value from the analog pin
-
-  void setup() {
-  myservo.attach(9);  // attaches the servo on pin 9 to the servo object
-  }
-
-  void loop() {
-  val = analogRead(potpin);            // reads the value of the potentiometer (value between 0 and 1023)
-  val = map(val, 0, 1023, 0, 180);     // scale it to use it with the servo (value between 0 and 180)
-  myservo.write(val);                  // sets the servo position according to the scaled value
-  delay(15);                           // waits for the servo to get there
-  }
-*/
-
+#include <LiquidCrystal.h>
 #include <Keypad.h>
 #include <Servo.h>
 
 Servo myservo;  // create servo object to control a servo
 
-// constants won't change. They're used here to set pin numbers:
-const int buttonPin = 11;     // the number of the pushbutton pin
-const int ledPin =  13;      // the number of the LED pin
-const int positionClose = 0;
-const int positionOpen = 90;
 
 const byte numRows = 4;         //number of rows on the keypad
 const byte numCols = 4;         //number of columns on the keypad
@@ -53,74 +29,53 @@ byte colPins[numCols] = {5, 4, 3, 2}; //Columns 0 to 3
 Keypad myKeypad = Keypad(makeKeymap(keymap), rowPins, colPins, numRows, numCols);
 
 
-char keypressed;                 //Where the keys are stored it changes very often
+char keypressed;                    //Where the keys are stored it changes very often
 char code[] = {'5', '8', '1', '2'}; //The default code, you can change it or make it a 'n' digits one
-short a = 0, i = 0, j = 0;  //Variables used later
+short a = 0, i = 0, j = 0;          //variables used later for iterating through password input sequence
 
-
-// variables will change:
-int buttonState = 0;         // variable for reading the pushbutton status
 
 void setup() {
-  // open connection to serial monitor
-  Serial.begin(9600);
+  Serial.begin(9600);               //open connection to serial monitor
 
-  // initialize the LED pin as an output:
-  pinMode(ledPin, OUTPUT);
-  // initialize the pushbutton pin as an input:
-  pinMode(buttonPin, INPUT);
-  myservo.attach(10);  // attaches the servo on pin 10 to the servo object
+  pinMode(LED_BUILTIN, OUTPUT);          //initialize the LED pin as an output
+
+  myservo.attach(10);               //attaches the servo on pin 10 to the servo object
   closeLock();
 }
 
 void loop() {
-  keypressed = myKeypad.getKey();               //Constantly waiting for a key to be pressed
+  keypressed = myKeypad.getKey();   //constantly wait and read for pressed key
 
-  // shows pressed keys to debug
+  //shows pressed keys in Serial Monitor to debug
   if (keypressed != NO_KEY) {
     Serial.println(keypressed);
   }
 
-
-  // check on keys to open/close lock
-  if (keypressed == '*') {                    // * to open the lock
-    getCode();                          //Getting code function
-    if (a == sizeof(code)) {       //The GetCode function assign a value to a (it's correct when it has the size of the code array)
-      openLock();                   //Open lock function if code is correct
+  //check pressed keys to open/close thelock
+  if (keypressed == '*') {          //press '*' to enter password sequence to open the lock
+    getCode();                      //call function to read input
+    if (a == sizeof(code)) {        //getCode function assigns a value to variable 'a' (it's correct when it has the size of the code array)
+      openLock();                   //open lock if password is correct
     }
     delay(2000);
   }
 
-  if (keypressed == '#') {                // # to close the lock
+  if (keypressed == '#') {          //press '#' to close the lock
     closeLock();
   }
-
-  /*  // read the state of the pushbutton value:
-    buttonState = digitalRead(buttonPin);
-    // check if the pushbutton is pressed: If it is pressed, the buttonState is HIGH
-    if (buttonState == HIGH) {
-      // turn LED on:
-      digitalWrite(ledPin, HIGH);
-      myservo.write(positionOpen);
-      delay(1500);
-    } else {
-      // turn LED off:
-      digitalWrite(ledPin, LOW);
-      myservo.write(positionClose);
-    }*/
 }
 
-void getCode() {                 //Getting code sequence
-  i = 0;                    //All variables set to 0
+void getCode() {                    //getting character sequence
+  i = 0;
   a = 0;
   j = 0;
 
-  while (keypressed != 'A') {                                   //The user press A to confirm the code otherwise he can keep typing
+  while (keypressed != 'D') {                             //The user press D to confirm the code otherwise he can keep typing
     keypressed = myKeypad.getKey();
-    if (keypressed != NO_KEY && keypressed != 'A' ) {     //If the char typed isn't A and neither "nothing"
+    if (keypressed != NO_KEY && keypressed != 'D' ) {     //If the char typed isn't D and neither "nothing"
       Serial.println(keypressed);                         //ATTENTION security risk, password will be shown in Serial Monitor!
       j++;
-      if (keypressed == code[i] && i < sizeof(code)) {       //if the char typed is correct a and i increments to verify the next caracter
+      if (keypressed == code[i] && i < sizeof(code)) {    //if the char typed is correct a and i increments to verify the next caracter
         a++;                                              //Now I think maybe I should have use only a or i ... too lazy to test it -_-'
         i++;
       }
@@ -132,14 +87,14 @@ void getCode() {                 //Getting code sequence
 
 }
 
-void openLock() {            // Lock opening function
-  digitalWrite(ledPin, LOW);
-  myservo.write(90);
-  Serial.println("opening the lock");
-}
-
-void closeLock() {            // Lock closing function
-  digitalWrite(ledPin, HIGH);
+void closeLock() {
+  digitalWrite(LED_BUILTIN, HIGH);
   myservo.write(0);
   Serial.println("closing the lock");
+}
+
+void openLock() {
+  digitalWrite(LED_BUILTIN, LOW);
+  myservo.write(90);
+  Serial.println("opening the lock");
 }
