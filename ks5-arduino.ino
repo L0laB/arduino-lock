@@ -6,15 +6,17 @@
   modified on 1st Jan 2020
 */
 
+//load mandatory libraries
 #include <LiquidCrystal.h>
 #include <Keypad.h>
 #include <Servo.h>
 
-Servo myservo;  // create servo object to control a servo
+//configuration for the servo - creating a servo object
+Servo myservo;
 
-
-const byte numRows = 4;         //number of rows on the keypad
-const byte numCols = 4;         //number of columns on the keypad
+//configuration for the keypad
+const byte numRows = 4;                 //number of rows on the keypad
+const byte numCols = 4;                 //number of columns on the keypad
 
 char keymap[numRows][numCols] = {
   {'1', '2', '3', 'A'},
@@ -23,23 +25,25 @@ char keymap[numRows][numCols] = {
   {'*', '0', '#', 'D'}
 };
 
-byte rowPins[numRows] = {9, 8, 7, 6}; //Rows 0 to 3 //if you modify your pins you should modify this too
-byte colPins[numCols] = {5, 4, 3, 2}; //Columns 0 to 3
+byte rowPins[numRows] = {9, 8, 7, 6};   //Rows 0 to 3 //if you modify your pins you should modify this too
+byte colPins[numCols] = {5, 4, 3, 2};   //Columns 0 to 3
 
 Keypad myKeypad = Keypad(makeKeymap(keymap), rowPins, colPins, numRows, numCols);
 
+//definition of variables
+char keypressed;                        //variable to store the key strokes
+char password[] = {'5', '8', '1', '2'}; //the default password
+short a = 0, i = 0, j = 0;              //variables used later for iterating through password input sequence
 
-char keypressed;                    //variable to store the key strokes
-char code[] = {'5', '8', '1', '2'}; //the default password
-short a = 0, i = 0, j = 0;          //variables used later for iterating through password input sequence
+//definition of constants
+const int ledGreen = 13;                //connect green LED to pin number 13
+const int ledRed = 12;                  //connect red LED to pin number 12
 
-const int ledGreen = 13;            // the number of the LED pin
-const int ledRed = 12;              // the number of the LED pin
-
+//initialise once various components
 void setup() {
   Serial.begin(9600);               //open connection to serial monitor
 
-  pinMode(LED_BUILTIN, OUTPUT);          //initialize the LED pin as an output
+  pinMode(LED_BUILTIN, OUTPUT);     //initialize the board LED as an output
   digitalWrite(ledGreen, LOW);
   digitalWrite(ledRed, HIGH);
 
@@ -47,62 +51,65 @@ void setup() {
   closeLock();
 }
 
+//main program - runs always in a loop
 void loop() {
   keypressed = myKeypad.getKey();   //constantly wait and read for pressed key
 
-  //shows pressed keys in Serial Monitor to debug
+  //shows pressed keys in Serial-Monitor to debug
   if (keypressed != NO_KEY) {
     Serial.println(keypressed);
   }
 
   //check pressed keys to open/close thelock
   if (keypressed == '*') {          //press '*' to enter password sequence to open the lock
-    getCode();                      //call function to read input
-    if (a == sizeof(code)) {        //getCode function assigns a value to variable 'a' (it's correct when it has the size of the code array)
+    checkPassword();                //call function to read input
+    if (a == sizeof(password)) {    //checkPassword function assigns a value to variable 'a' and it's correct when it has the size of the password array
       openLock();                   //open lock if password is correct
     }
-    delay(2000);
   }
 
   if (keypressed == '#') {          //press '#' to close the lock
+    delay(300);
     closeLock();
   }
 }
 
-void getCode() {                    //getting character sequence
+//function to verify password characters
+void checkPassword() {
   i = 0;
   a = 0;
   j = 0;
 
-  while (keypressed != 'D') {                             //The user press D to confirm the code otherwise he can keep typing
+  while (keypressed != 'D') {                                   //to confirm the password press 'D' to 'open Door'
     keypressed = myKeypad.getKey();
-    if (keypressed != NO_KEY && keypressed != 'D' ) {     //If the char typed isn't D and neither "nothing"
-      Serial.println(keypressed);                         //ATTENTION security risk, password will be shown in Serial Monitor!
+    if (keypressed != NO_KEY && keypressed != 'D' ) {           //If the char typed isn't D and neither "nothing"
+      Serial.println(keypressed);                               //ATTENTION security risk, password will be shown in Serial Monitor!
       j++;
-      if (keypressed == code[i] && i < sizeof(code)) {    //if the char typed is correct a and i increments to verify the next caracter
-        a++;                                              //Now I think maybe I should have use only a or i ... too lazy to test it -_-'
+      if (keypressed == password[i] && i < sizeof(password)) {  //if the char is correct a-/ i-variable increments to verify the next caracter
+        a++;                                                    //maybe only one iterator needed: a or i ?
         i++;
       }
       else
-        a--;                                               //if the character typed is wrong a decrements and cannot equal the size of code []
+        a--;                                                    //if the character typed is wrong a decrements and cannot equal the size of password array
     }
   }
   keypressed = NO_KEY;
-
 }
 
+//function opening the lock and setting statuses
 void closeLock() {
-  digitalWrite(LED_BUILTIN, HIGH);
   myservo.write(90);
-  Serial.println("closing the lock");
+  digitalWrite(LED_BUILTIN, HIGH);
   digitalWrite(ledRed, HIGH);
   digitalWrite(ledGreen, LOW);
+  Serial.println("closing the lock");
 }
 
+//function closing the lock and setting statuses
 void openLock() {
-  digitalWrite(LED_BUILTIN, LOW);
   myservo.write(0);
-  Serial.println("opening the lock");
+  digitalWrite(LED_BUILTIN, LOW);
   digitalWrite(ledGreen, HIGH);
   digitalWrite(ledRed, LOW);
+  Serial.println("opening the lock");
 }
