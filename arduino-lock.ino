@@ -54,7 +54,7 @@ Keypad myKeypad = Keypad(makeKeymap(keymap), rowPins, colPins, numRows, numCols)
 
 //definition of variables
 char keypressed;                        //variable to store the key strokes
-char password[] = {'5', '8', '1', '2'}; //the default password
+char password[] = {'1', '2'};           //the default password
 short a = 0, i = 0, j = 0;              //variables used later for iterating through password input sequence
 
 //definition of constants
@@ -69,7 +69,7 @@ void setup() {
   digitalWrite(ledGreen, LOW);
   digitalWrite(ledRed, HIGH);
 
-  myservo.attach(10);               //attaches the servo on pin 10 to the servo object
+  myservo.attach(11);               //attaches the servo on pin 10 to the servo object
   closeLock();
 }
 
@@ -102,9 +102,9 @@ void checkPassword() {
   a = 0;
   j = 0;
 
-  while (keypressed != 'D') {                                   //to confirm the password press 'D' to 'open Door'
+  while (keypressed != 'B') {                                   //to confirm the password press 'B' to 'open Door'
     keypressed = myKeypad.getKey();
-    if (keypressed != NO_KEY && keypressed != 'D' ) {           //If the char typed isn't D and neither "nothing"
+    if (keypressed != NO_KEY && keypressed != 'B' ) {           //If the char typed isn't B and neither "nothing"
       Serial.println(keypressed);                               //ATTENTION security risk, password will be shown in Serial Monitor!
       j++;
       if (keypressed == password[i] && i < sizeof(password)) {  //if the char is correct a-/ i-variable increments to verify the next caracter
